@@ -8,11 +8,13 @@ from data.datasets import *
 from models.yolo import *
 from torch.optim import Adam
 from models.darknet import *
+from models.backbones import *
 
-bb = DarkNet()
+# bb = DarkNet()
+bb=ResNetBackBone()
 yolov1 = YOLO(bb)
 yolov1.to(device=torch.device('cuda:0'))
-opt=Adam(yolov1.parameters(),lr=1e-2)
+opt=Adam(yolov1.parameters(),lr=1e-3)
 
 for epoch in range(10):
     for sample in dataloader:

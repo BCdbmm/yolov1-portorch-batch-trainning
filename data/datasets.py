@@ -111,12 +111,4 @@ class voc_data(Dataset):
 trans=tvtfs.Compose([Flip(),Resize(),Totensor()])
 dd=voc_data(transform=trans)
 
-dataloader=DataLoader(dd,batch_size=4,shuffle=True,num_workers=0)
-
-# max_count=0
-# for sample in dataloader:
-#     img = sample['image']
-#     bbox = sample['bbox']
-#     label = sample['label']
-#     difficult = sample['difficult']
-#     print(bbox)
+dataloader=DataLoader(dd,batch_size=6,shuffle=True,num_workers=0)

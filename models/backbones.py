@@ -20,12 +20,15 @@ class ResNetBackBone(nn.Module):
             layers.append(layer)
         self.layers=nn.Sequential(*layers[:-2])
         self.head_conv=nn.Conv2d(2048,1024,1,1)
-        self.out_conv = nn.Conv2d(1024, 1024, 3, 2, padding=1)
+        self.conv1 = nn.Conv2d(1024, 1024, 3, 2, padding=1)
+        self.conv1_ = nn.Conv2d(1024, 1024, 3, 1, padding=1)
+        self.out_conv = nn.Conv2d(1024, 1024, 3, 1, padding=1)
         self.out_conv_ = nn.Conv2d(1024, 30, 1, 1)
     
     def forward(self,x):
         x=F.leaky_relu(self.layers(x))
         x=F.leaky_relu(self.head_conv(x))
+        x=F.leaky_relu(self.conv1_(F.leaky_relu(self.conv1(x))))
         x=F.leaky_relu(self.out_conv(x))
         x=self.out_conv_(x)
         return x.permute(0, 2, 3, 1)

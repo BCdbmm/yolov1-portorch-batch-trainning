@@ -60,8 +60,6 @@ class voc_data(Dataset):
         img_pth=os.path.join(self.data_dir,'JPEGImages',id_+'.jpg')
         ann = ET.parse(ann_pth)
         objs=ann.findall('object')
-        labels=[]
-        bboxes=[]
         difficults=[]
         # img=plt.imread(img_pth)
         # plt.imshow(img)
@@ -73,6 +71,7 @@ class voc_data(Dataset):
         size=ann.find('size')
         W=int(size.find('width').text)
         H=int(size.find('height').text)
+        ct=[]
         for obj in objs:
             difficult = int(obj.find('difficult').text)
             if not self.return_difficult and difficult==1:
@@ -80,8 +79,8 @@ class voc_data(Dataset):
             name=obj.find('name').text
             bbox_obj=obj.find('bndbox')
             bbox=[int(bbox_obj.find(e).text) for e in ['ymin','xmin','ymax','xmax']]
-            cty=int(np.floor(((bbox[2]+bbox[0])/2)/H)*7)
-            ctx=int(np.floor(((bbox[3]+bbox[1])/2)/W)*7)
+            cty=int(np.floor(((bbox[2]+bbox[0])/2)/H*7))
+            ctx=int(np.floor(((bbox[3]+bbox[1])/2)/W*7))
             fg[cty,ctx]=1
             label=self.VOC_BBOX_LABEL_NAMES.index(name)+1
             cls_[cty,ctx,label-1]=1
@@ -89,6 +88,7 @@ class voc_data(Dataset):
             bb[cty, ctx, 1] = bbox[1]
             bb[cty, ctx, 2] = bbox[2]
             bb[cty, ctx, 3] = bbox[3]
+            ct.append([ctx,cty])
             # labels.append(label)
             # bboxes.append(bbox)
             df[cty, ctx]=difficult
@@ -99,7 +99,6 @@ class voc_data(Dataset):
         # bbox=np.stack(bboxes)
         # difficult=np.stack(difficults)
         img=read_image(img_pth)
-
         sample={'image':img,'bbox':bb,'fg':fg,'label':cls_,'difficult':df}
         if self.transform is None:
             return sample
@@ -108,7 +107,7 @@ class voc_data(Dataset):
         # plt.show()
 
 
-trans=tvtfs.Compose([Flip(),Resize(),Totensor()])
-dd=voc_data(transform=trans)
+trans=tvtfs.Compose([Resize(),Totensor()])
+dd=voc_data(transform=trans,return_difficult=False,is_train=True)
 
-dataloader=DataLoader(dd,batch_size=6,shuffle=True,num_workers=0)
+dataloader=DataLoader(dd,batch_size=8,shuffle=True,num_workers=0)

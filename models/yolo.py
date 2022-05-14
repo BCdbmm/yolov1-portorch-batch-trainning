@@ -27,17 +27,22 @@ class YOLO(nn.Module):
         y = np.arange(7)
         offset_x, offset_y = np.meshgrid(x, y)
         bbox = torch.empty(loc.shape).cuda()
-        bbox[:, :, :, 0, 0] = loc[:, :, :, 0, 0] + torch.from_numpy(offset_y).cuda()
-        bbox[:, :, :, 1, 0] = loc[:, :, :, 1, 0] + torch.from_numpy(offset_y).cuda()
-        bbox[:, :, :, 0, 1] = loc[:, :, :, 0, 1] + torch.from_numpy(offset_x).cuda()
-        bbox[:, :, :, 1, 1] = loc[:, :, :, 1, 1] + torch.from_numpy(offset_x).cuda()
-        fg_loss = torch.square(gt_fg - fg_score).sum()
+        bbox[:, :, :, 0, 0] = (loc[:, :, :, 0, 0] + torch.from_numpy(offset_y).cuda())/7.
+        bbox[:, :, :, 1, 0] = (loc[:, :, :, 1, 0] + torch.from_numpy(offset_y).cuda())/7.
+        bbox[:, :, :, 0, 1] = (loc[:, :, :, 0, 1] + torch.from_numpy(offset_x).cuda())/7.
+        bbox[:, :, :, 1, 1] = (loc[:, :, :, 1, 1] + torch.from_numpy(offset_x).cuda())/7.
+        bbox[:, :, :, 0, 2]=loc[:, :, :, 0, 2]
+        bbox[:, :, :, 0, 3] = loc[:, :, :, 0, 3]
+        bbox[:, :, :, 1, 2] = loc[:, :, :, 0, 2]
+        bbox[:, :, :, 1, 3] = loc[:, :, :, 0, 3]
+        fg_loss = torch.square(gt_fg - fg_score)[gt_fg==1].sum()+0.5*torch.square(gt_fg - fg_score)[gt_fg==0].sum()
 
-        cls_loss = torch.square(cls_score-gt_label).sum()
-        bb=bbox[(gt_fg>0),:,:]
-        gt_bb=gt_bbox[(gt_fg>0),:]
-        loc_loss=torch.square(bb[:,0,:]-gt_bb).sum()+torch.square(bb[:,1,:]-gt_bb).sum()
+        cls_loss = torch.square(cls_score-gt_label)[gt_fg>0].sum()
+
+        loc_loss=(torch.square(bbox[:,:,:,0,:]-gt_bbox)
+                  +torch.square(bbox[:,:,:,1,:]-gt_bbox))[(gt_fg>0)].sum()
         loss = 5 * loc_loss + fg_loss + cls_loss
+
 
         return loss / loc.shape[0]
 

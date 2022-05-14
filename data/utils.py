@@ -89,6 +89,15 @@ class Totensor():
             label = torch.LongTensor(label)
             difficult = torch.Tensor(difficult)
             fg = torch.LongTensor(fg)
+        h=bbox[:,:,2]-bbox[:,:,0]
+        w = bbox[:, :, 3] - bbox[:, :, 1]
+        cty=bbox[:,:,0]+h/2.
+        ctx = bbox[:, :, 1] + w / 2.
+        bbox[:,:,0]=cty
+        bbox[:,:,1]=ctx
+        bbox[:,:,2]=h
+        bbox[:,:,3]=w
+
         return {'image': img, 'bbox': bbox,'fg':fg ,'label': label, 'difficult': difficult}
 
 

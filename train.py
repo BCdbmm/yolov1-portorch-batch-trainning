@@ -14,7 +14,8 @@ from models.backbones import *
 bb=ResNetBackBone()
 yolov1 = YOLO(bb)
 yolov1.to(device=torch.device('cuda:0'))
-opt=Adam(yolov1.parameters(),lr=1e-5)
+lr=1e-6
+opt=Adam(yolov1.parameters(),lr=1e-6)
 
 i=0
 epoch_loss=0
